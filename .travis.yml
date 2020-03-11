@@ -9,7 +9,7 @@ matrix:
  allow_failures:
    - go: master
 
-go_import_path: gonum.org/v1/hdf5
+go_import_path: github.com/doctordesh/hdf5
 
 sudo: false
 
@@ -33,4 +33,3 @@ script:
  - go get -d -t -v ./...
  - go install -v ./...
  - go test -v ./...
-

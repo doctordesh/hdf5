@@ -7,7 +7,7 @@ package main
 import (
 	"fmt"
 
-	"gonum.org/v1/hdf5"
+	"github.com/doctordesh/hdf5"
 )
 
 func main() {

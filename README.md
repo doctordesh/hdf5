@@ -1,7 +1,7 @@
 # hdf5
 
 [![Build Status](https://secure.travis-ci.org/gonum/hdf5.png)](http://travis-ci.org/gonum/hdf5)
-[![GoDoc](https://godoc.org/gonum.org/v1/hdf5?status.svg)](https://godoc.org/gonum.org/v1/hdf5)
+[![GoDoc](https://godoc.org/github.com/doctordesh/hdf5?status.svg)](https://godoc.org/github.com/doctordesh/hdf5)
 
 Naive ``cgo`` bindings for the ``C-API`` of ``hdf5``.
 
