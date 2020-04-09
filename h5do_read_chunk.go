@@ -25,8 +25,9 @@ size_t data_size	    IN: Size of the actual data to be written in bytes
 const void *buf	        IN: Buffer containing data to be written to the chunk
 
 */
-func (s *Dataset) WriteDirect(data interface{}, memspace, filespace *Dataspace) error {
-	C.H5DOwrite_chunk(s.id, C.H5P_DEFAULT)
+func (s *Dataset) WriteChunk(data interface{}, memspace, filespace *Dataspace) error {
+
+	C.H5DOwrite_chunk(s.id, C.H5P_DEFAULT, 0, <offset>, <data-size>, <data/buffer>)
 	return nil
 }
 
