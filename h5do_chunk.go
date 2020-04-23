@@ -31,17 +31,8 @@ func (s *Dataset) WriteChunk(data *[]byte, offset []uint) error {
 	return h5err(C.herr_t(rc))
 }
 
-/*
-Signature: herr_t H5DOread_chunk( hid_t dset_id, hid_t dxpl_id, const hsize_t *offset, uint32_t *filter_mask, void *buf )
-Parameters:
-hid_t dset_id				IN: Identifier for the dataset to be read
-hid_t dxpl_id				IN: Transfer property list identifier for this I/O operation
-const hsize_t *offset		IN: Logical position of the chunk’s first element in the dataspace
-uint32_t * filter_mask   	IN: Mask for identifying the filters used with the chunk
-void *buf					IN: Buffer containing the chunk read from the dataset
-
-*/
-// ReadChunk
+// ReadChunk reads a raw data chunk directly from a dataset in a file into a buffer.
+// It requires that the dataset is chunked.
 func (s *Dataset) ReadChunk(offset []uint) ([]byte, uint32, error) {
 
 	// Three step process
@@ -68,7 +59,7 @@ func (s *Dataset) ReadChunk(offset []uint) ([]byte, uint32, error) {
 	addr := unsafe.Pointer(slice.Data)
 	c_filters := (*C.uint32_t)(unsafe.Pointer(&filters))
 
-	// 3. Read chunk into go slice
+	// Read chunk into go slice
 	rc := C.H5DOread_chunk(s.id, C.H5P_DEFAULT, c_offset, c_filters, addr)
 	err = h5err(C.herr_t(rc))
 	if err != nil {
@@ -78,12 +69,6 @@ func (s *Dataset) ReadChunk(offset []uint) ([]byte, uint32, error) {
 	return data, filters, err
 }
 
-// WriteSubset(data interface{}, memspace, filespace *Dataspace) error
-// rc := C.H5Dwrite(s.id, dtype.id, memspace_id, filespace_id, 0, addr)
-
 /*
 Extend dataset: https://support.hdfgroup.org/HDF5/doc/RM/RM_H5D.html#Dataset-SetExtent
-Set chunk size: https://support.hdfgroup.org/HDF5/doc/RM/RM_H5P.html#Property-SetChunk
-
-Documentation on chunks: https://support.hdfgroup.org/HDF5/doc/Advanced/Chunking/Chunking_Tutorial_EOS13_2009.pdf
 */
