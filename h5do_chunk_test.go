@@ -3,28 +3,31 @@ package hdf5
 import (
 	"encoding/binary"
 	"fmt"
+	"os"
 	"testing"
 )
 
 func TestWriteChunkBytes(t *testing.T) {
+	filename := "chunk_bytes.h5"
 	DisplayErrors(true)
 	defer DisplayErrors(false)
+	defer os.Remove(filename)
 
 	fileDims := []uint{5, 3, 10}
 	fspace, err := CreateSimpleDataspace(fileDims, nil)
 	if err != nil {
-		panic(err)
+		t.Fatal(err)
 	}
 
-	f, err := CreateFile(fname, F_ACC_TRUNC)
+	f, err := CreateFile(filename, F_ACC_TRUNC)
 	if err != nil {
-		panic(fmt.Sprintf("CreateFile failed: %s\n", err))
+		t.Fatal(err)
 	}
 	defer f.Close()
 
 	dtype, err := NewDatatypeFromValue(byte(0))
 	if err != nil {
-		panic("could not create a dtype")
+		t.Fatal(err)
 	}
 
 	chunkProps, err := NewPropList(P_DATASET_CREATE)
@@ -41,7 +44,7 @@ func TestWriteChunkBytes(t *testing.T) {
 
 	dset, err := f.CreateDatasetWith("dset", dtype, fspace, chunkProps)
 	if err != nil {
-		panic(err)
+		t.Fatal(err)
 	}
 
 	indexedWrite := func(k uint) {
@@ -57,7 +60,7 @@ func TestWriteChunkBytes(t *testing.T) {
 
 		err := dset.WriteChunk(&data, offset)
 		if err != nil {
-			panic(err)
+			t.Fatal(err)
 		}
 	}
 
@@ -67,24 +70,26 @@ func TestWriteChunkBytes(t *testing.T) {
 }
 
 func TestWriteChunkUInt32(t *testing.T) {
+	filename := "chunk_uint32.h5"
 	DisplayErrors(true)
 	defer DisplayErrors(false)
+	defer os.Remove(filename)
 
 	fileDims := []uint{5, 3, 10}
 	fspace, err := CreateSimpleDataspace(fileDims, nil)
 	if err != nil {
-		panic(err)
+		t.Fatal(err)
 	}
 
-	f, err := CreateFile(fname, F_ACC_TRUNC)
+	f, err := CreateFile(filename, F_ACC_TRUNC)
 	if err != nil {
-		panic(fmt.Sprintf("CreateFile failed: %s\n", err))
+		t.Fatal(err)
 	}
 	defer f.Close()
 
 	dtype, err := NewDatatypeFromValue(uint32(0))
 	if err != nil {
-		panic("could not create a dtype")
+		t.Fatal(err)
 	}
 
 	chunkProps, err := NewPropList(P_DATASET_CREATE)
@@ -101,7 +106,7 @@ func TestWriteChunkUInt32(t *testing.T) {
 
 	dset, err := f.CreateDatasetWith("dset", dtype, fspace, chunkProps)
 	if err != nil {
-		panic(err)
+		t.Fatal(err)
 	}
 
 	indexedWrite := func(k uint) {
@@ -119,7 +124,7 @@ func TestWriteChunkUInt32(t *testing.T) {
 
 		err := dset.WriteChunk(&data, offset)
 		if err != nil {
-			panic(err)
+			t.Fatal(err)
 		}
 	}
 
