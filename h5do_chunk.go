@@ -36,14 +36,46 @@ Signature: herr_t H5DOread_chunk( hid_t dset_id, hid_t dxpl_id, const hsize_t *o
 Parameters:
 hid_t dset_id				IN: Identifier for the dataset to be read
 hid_t dxpl_id				IN: Transfer property list identifier for this I/O operation
-uint32_t * filter_mask   	IN: Mask for identifying the filters used with the chunk
 const hsize_t *offset		IN: Logical position of the chunk’s first element in the dataspace
+uint32_t * filter_mask   	IN: Mask for identifying the filters used with the chunk
 void *buf					IN: Buffer containing the chunk read from the dataset
 
 */
 // ReadChunk
-func (s *Dataset) ReadChunk(offset []uint) ([]byte, error) {
+func (s *Dataset) ReadChunk(offset []uint) ([]byte, uint32, error) {
+
+	// Three step process
+	// 1. Figure out number of bytes in chunk
+	// 2. Prepare Go slice to fit chunk
+	// 3. Read chunk into go slice
+
+	var err error
+	var data []byte
+	var filters uint32
+
+	// Number of bytes in chunk
+
+	nbytes, err := s.GetChunkStorageSize(offset)
+	if err != nil {
+		return data, filters, err
+	}
+
+	// Prepare Go slice (and other data)
 	c_offset := (*C.hsize_t)(unsafe.Pointer(&offset[0]))
+	data = make([]byte, nbytes)
+	v := reflect.Indirect(reflect.ValueOf(&data))
+	slice := (*reflect.SliceHeader)(unsafe.Pointer(v.UnsafeAddr()))
+	addr := unsafe.Pointer(slice.Data)
+	c_filters := (*C.uint32_t)(unsafe.Pointer(&filters))
+
+	// 3. Read chunk into go slice
+	rc := C.H5DOread_chunk(s.id, C.H5P_DEFAULT, c_offset, c_filters, addr)
+	err = h5err(C.herr_t(rc))
+	if err != nil {
+		return data, filters, err
+	}
+
+	return data, filters, err
 }
 
 // WriteSubset(data interface{}, memspace, filespace *Dataspace) error
