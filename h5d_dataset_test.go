@@ -195,3 +195,93 @@ func TestSelectHyperslab(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+func TestGetChunkStorageSize(t *testing.T) {
+	fname := "TestGetChunkStorageSize.h5"
+
+	DisplayErrors(true)
+	defer DisplayErrors(false)
+	defer os.Remove(fname)
+
+	// Create a chunked file with compression, but level to 0 (zero)
+	// 20 bytes per chunk
+	// Attempt to write only 10 bytes in offset 0,0,0
+	// Assert that GetChunkStorageSize for offset 0,0,0 == 10
+
+	fileDims := []uint{2, 2, 10}
+	chunkDims := []uint{1, fileDims[1], fileDims[2]}
+	fspace, err := CreateSimpleDataspace(fileDims, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	f, err := CreateFile(fname, F_ACC_TRUNC)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer f.Close()
+
+	dtype, err := NewDatatypeFromValue(byte(0))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	propsList, err := NewPropList(P_DATASET_CREATE)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer propsList.Close()
+
+	err = propsList.SetChunk(chunkDims)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = propsList.SetDeflate(NoCompression)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	dset, err := f.CreateDatasetWith("dset", dtype, fspace, propsList)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Make 10 bytes with 5s in there
+	data := make([]byte, 10)
+	for i := 0; i < len(data); i++ {
+		data[i] = 5
+	}
+
+	err = dset.WriteChunk(&data, []uint{0, 0, 0})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Close all in order to write file to disk
+	dset.Close()
+	propsList.Close()
+	f.Close()
+
+	// Reopen and read relevant info
+	f, err = OpenFile(fname, F_ACC_RDONLY)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer f.Close()
+
+	dset, err = f.OpenDataset("dset")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer dset.Close()
+
+	b, err := dset.GetChunkStorageSize([]uint{0, 0, 0})
+	if err != nil {
+		panic(err)
+	}
+
+	if b != len(data) {
+		t.Fatalf("GetChunkStorageSize expected %d, got %d", len(data), b)
+	}
+}

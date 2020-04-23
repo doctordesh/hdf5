@@ -182,6 +182,28 @@ func (s *Dataset) Datatype() (*Datatype, error) {
 	return NewDatatype(dtype_id), nil
 }
 
+// GetChunkStorageSize returns the amount of storage allocated within
+// the file for a raw data chunk in a dataset. The call is only
+// allowed on a chunked dataset and where compression is activated.
+//
+// This is useful when compressed data has been written to a chunk,
+// which means the data will be smaller than the dimensions of the
+// chunk multiplied. This gives the actual number of bytes.
+func (s *Dataset) GetChunkStorageSize(offset []uint) (int, error) {
+	var err error
+	var nbytes uint
+	c_nbytes := (*C.hsize_t)(unsafe.Pointer(&nbytes))
+	c_offset := (*C.hsize_t)(unsafe.Pointer(&offset[0]))
+
+	rc := C.H5Dget_chunk_storage_size(s.id, c_offset, c_nbytes)
+	err = h5err(C.herr_t(rc))
+	if err != nil {
+		return 0, err
+	}
+
+	return int(nbytes), nil
+}
+
 // hasIllegalGoPointer returns whether the Dataset is known to have
 // a Go pointer to Go pointer chain. If the Dataset was created by
 // a call to OpenDataset without a read operation, it will be false,
