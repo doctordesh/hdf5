@@ -15,6 +15,7 @@ import "C"
 import (
 	"compress/zlib"
 	"fmt"
+	"unsafe"
 )
 
 const (
@@ -114,6 +115,34 @@ func (p *PropList) GetChunkCache() (nslots, nbytes int, w0 float64, err error) {
 	)
 	err = h5err(C.H5Pget_chunk_cache(C.hid_t(p.id), &c_nslots, &c_nbytes, &c_w0))
 	return int(c_nslots), int(c_nbytes), float64(c_w0), err
+}
+
+/*
+Signature: herr_t H5Pset_filter(hid_t plist_id, H5Z_filter_t filter_id, unsigned int flags, size_t cd_nelmts, const unsigned int cd_values[] )
+
+hid_t plist_id						IN: Dataset or group creation property list identifier.
+H5Z_filter_t filter_id				IN: Filter identifier for the filter to be added to the pipeline.
+unsigned int flags					IN: Bit vector specifying certain general properties of the filter.
+size_t cd_nelmts					IN: Number of elements in cd_values.
+const unsigned int cd_values[]    	IN: Auxiliary data for the filter.
+*/
+func (p *PropList) SetFilter(filterID int, mandatory bool, opts []uint) error {
+
+	c_filterID := (C.H5Z_filter_t)(filterID)
+
+	var c_flags C.uint
+	if mandatory {
+		c_flags = C.H5Z_FLAG_MANDATORY
+	} else {
+		c_flags = C.H5Z_FLAG_OPTIONAL
+	}
+
+	c_cd_nelmts := C.size_t(len(opts))
+	c_cd_values := (*C.uint)(unsafe.Pointer(&opts[0]))
+
+	rc := C.H5Pset_filter(p.id, c_filterID, c_flags, c_cd_nelmts, c_cd_values)
+
+	return h5err(C.herr_t(rc))
 }
 
 func h5pclose(id C.hid_t) C.herr_t {

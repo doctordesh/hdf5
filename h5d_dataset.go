@@ -188,7 +188,7 @@ func (s *Dataset) Datatype() (*Datatype, error) {
 //
 // This is useful when compressed data has been written to a chunk,
 // which means the data will be smaller than the dimensions of the
-// chunk multiplied. This gives the actual number of bytes.
+// chunk multiplied. This gives the actual number of bytes on disk.
 func (s *Dataset) GetChunkStorageSize(offset []uint) (int, error) {
 	var err error
 	var nbytes uint

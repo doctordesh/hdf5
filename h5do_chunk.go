@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// DOCS: https://support.hdfgroup.org/HDF5/doc/HL/RM_HDF5Optimized.html
-
 package hdf5
 
 // #include "hdf5.h"
@@ -68,7 +66,3 @@ func (s *Dataset) ReadChunk(offset []uint) ([]byte, uint32, error) {
 
 	return data, filters, err
 }
-
-/*
-Extend dataset: https://support.hdfgroup.org/HDF5/doc/RM/RM_H5D.html#Dataset-SetExtent
-*/

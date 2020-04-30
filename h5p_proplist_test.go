@@ -262,3 +262,47 @@ func checkChunkCache(nslots, nbytes int, w0 float64, dapl *PropList) error {
 	}
 	return nil
 }
+
+func TestSetFilter(t *testing.T) {
+	fname := "TestSetFilter.h5"
+
+	DisplayErrors(true)
+	defer DisplayErrors(false)
+	defer os.Remove(fname)
+
+	fileDims := []uint{1, 1, 1}
+	fspace, err := CreateSimpleDataspace(fileDims, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	f, err := CreateFile(fname, F_ACC_TRUNC)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer f.Close()
+
+	dtype, err := NewDatatypeFromValue(byte(0))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	propsList, err := NewPropList(P_DATASET_CREATE)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer propsList.Close()
+
+	err = propsList.SetChunk(fileDims)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	propsList.SetFilter(32008, true, []uint{2048, 2})
+
+	dset, err := f.CreateDatasetWith("dset", dtype, fspace, propsList)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer dset.Close()
+}
